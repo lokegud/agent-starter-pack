@@ -1,0 +1,88 @@
+# Prometheus configuration for Agent City Simulation
+
+global:
+  scrape_interval: 15s  # Scrape targets every 15 seconds
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: 'agent-city-local'
+    environment: 'development'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Rule files
+# rule_files:
+#   - 'alerts/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Core modules
+  - job_name: 'identity-generator'
+    static_configs:
+      - targets: ['identity-generator:8001']
+    metrics_path: '/metrics'
+
+  - job_name: 'cartographer'
+    static_configs:
+      - targets: ['cartographer:8002']
+    metrics_path: '/metrics'
+
+  - job_name: 'orchestrator'
+    static_configs:
+      - targets: ['orchestrator:8003']
+    metrics_path: '/metrics'
+
+  - job_name: 'predictor'
+    static_configs:
+      - targets: ['predictor:8004']
+    metrics_path: '/metrics'
+
+  - job_name: 'ranker'
+    static_configs:
+      - targets: ['ranker:8005']
+    metrics_path: '/metrics'
+
+  - job_name: 'data-integration'
+    static_configs:
+      - targets: ['data-integration:8006']
+    metrics_path: '/metrics'
+
+  # Departments
+  - job_name: 'rd-department'
+    static_configs:
+      - targets: ['rd-department:8101']
+    metrics_path: '/metrics'
+
+  - job_name: 'builders-department'
+    static_configs:
+      - targets: ['builders-department:8102']
+    metrics_path: '/metrics'
+
+  - job_name: 'stockbrokers-department'
+    static_configs:
+      - targets: ['stockbrokers-department:8103']
+    metrics_path: '/metrics'
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    metrics_path: '/metrics'
+
+  # PostgreSQL exporter (optional)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis exporter (optional)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
