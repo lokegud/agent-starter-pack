@@ -1,0 +1,355 @@
+# Core Foundation Configuration
+# Essential services that everything depends on
+
+foundation:
+  # Message Queue
+  message_queue:
+    type: kafka  # kafka (local), pubsub (GCP)
+
+    kafka:
+      bootstrap_servers: kafka:9092
+      consumer_group: agent-city
+      auto_offset_reset: earliest
+      enable_auto_commit: true
+      session_timeout_ms: 30000
+      max_poll_records: 500
+
+    pubsub:  # GCP only
+      project_id: ${GCP_PROJECT_ID}
+      credentials_file: /secrets/gcp-credentials.json
+
+    # Topic configuration
+    topics:
+      # Core topics
+      core_identity_requests:
+        name: core.identity.requests
+        partitions: 3
+        replication_factor: 1
+      core_identity_responses:
+        name: core.identity.responses
+        partitions: 3
+        replication_factor: 1
+      core_location_updates:
+        name: core.location.updates
+        partitions: 3
+        replication_factor: 1
+      core_agent_lifecycle:
+        name: core.agent.lifecycle
+        partitions: 3
+        replication_factor: 1
+
+      # Module topics
+      predictor_forecasts:
+        name: predictor.forecasts
+        partitions: 3
+        replication_factor: 1
+      ranker_evaluations:
+        name: ranker.evaluations
+        partitions: 3
+        replication_factor: 1
+      cartographer_movements:
+        name: cartographer.movements
+        partitions: 3
+        replication_factor: 1
+
+      # Department topics
+      dept_rd_findings:
+        name: dept.rd-findings
+        partitions: 3
+        replication_factor: 1
+      dept_stockbrokers_trades:
+        name: dept.stockbrokers-trades
+        partitions: 3
+        replication_factor: 1
+      dept_builders_launches:
+        name: dept.builders-launches
+        partitions: 3
+        replication_factor: 1
+
+  # Database
+  database:
+    postgres:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      database: ${POSTGRES_DB}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+
+      # Connection pool
+      pool_size: 20
+      max_overflow: 10
+      pool_timeout: 30
+      pool_recycle: 3600
+
+      # Extensions
+      extensions:
+        - postgis  # For geographic data
+        - uuid-ossp  # For UUID generation
+        - pg_trgm  # For similarity searches
+
+      # Schema
+      schemas:
+        - public
+        - identities
+        - geography
+        - agents
+        - trading
+        - analytics
+
+    # Connection retry
+    retry:
+      max_attempts: 5
+      backoff_factor: 2
+      max_backoff: 30
+
+  # Cache
+  cache:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      db: 0
+
+      # Connection pool
+      max_connections: 50
+      socket_timeout: 5
+      socket_connect_timeout: 5
+
+      # Keys TTL (seconds)
+      default_ttl: 300
+      identity_ttl: 3600
+      market_data_ttl: 60
+      predictions_ttl: 1800
+
+    # Cache strategy
+    strategy:
+      eviction_policy: lru  # Least Recently Used
+      max_memory: 512mb
+      max_memory_policy: allkeys-lru
+
+  # Logging
+  logging:
+    level: ${LOG_LEVEL}  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format: json  # json or text
+
+    # Output
+    console:
+      enabled: true
+      colorize: true
+
+    file:
+      enabled: true
+      path: /var/log/agent-city
+      rotation: daily
+      retention_days: 30
+      max_size_mb: 100
+
+    # Centralized logging (GCP)
+    cloud_logging:
+      enabled: false  # Enable for GCP
+      project_id: ${GCP_PROJECT_ID}
+
+    # Log levels per module
+    loggers:
+      core: INFO
+      modules: INFO
+      departments: INFO
+      agents: INFO
+      trading: WARNING  # Less verbose for trading
+
+    # Sensitive data masking
+    mask_sensitive: true
+    sensitive_fields:
+      - password
+      - api_key
+      - secret
+      - token
+      - credential
+
+  # Monitoring
+  monitoring:
+    # Prometheus metrics
+    prometheus:
+      enabled: ${PROMETHEUS_ENABLED}
+      port: ${PROMETHEUS_PORT}
+      path: /metrics
+
+      # Metrics to collect
+      metrics:
+        - http_requests_total
+        - http_request_duration_seconds
+        - agent_count
+        - agent_errors_total
+        - trading_pnl
+        - trading_volume
+        - api_calls_total
+        - api_errors_total
+        - cache_hits_total
+        - cache_misses_total
+        - db_connections
+        - message_queue_lag
+
+    # Health checks
+    health_checks:
+      enabled: true
+      port: 8080
+      path: /health
+
+      checks:
+        - database
+        - cache
+        - message_queue
+        - disk_space
+        - memory
+
+    # Alerting
+    alerting:
+      enabled: true
+      channels:
+        - slack  # Slack webhooks
+        - email  # Email alerts
+
+      rules:
+        - name: high_error_rate
+          condition: error_rate > 0.05  # >5% errors
+          severity: critical
+        - name: agent_failure
+          condition: agent_health < 0.9  # <90% healthy
+          severity: warning
+        - name: trading_loss_limit
+          condition: daily_loss > ${DAILY_LOSS_LIMIT}
+          severity: critical
+          action: halt_trading
+        - name: low_disk_space
+          condition: disk_free_pct < 10
+          severity: warning
+        - name: high_memory
+          condition: memory_usage_pct > 85
+          severity: warning
+
+  # API Gateway
+  api_gateway:
+    host: ${API_GATEWAY_HOST}
+    port: ${API_GATEWAY_PORT}
+
+    # CORS
+    cors:
+      enabled: true
+      allow_origins:
+        - http://localhost:3000
+        - https://dashboard.agent-city.com
+      allow_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+      allow_headers:
+        - Content-Type
+        - Authorization
+
+    # Authentication
+    auth:
+      enabled: ${REQUIRE_AUTH}
+      jwt_secret: ${JWT_SECRET}
+      jwt_algorithm: HS256
+      jwt_expiration: 86400  # 24 hours
+
+    # Rate limiting
+    rate_limiting:
+      enabled: true
+      default_limit: 100  # requests per minute
+      by_endpoint:
+        /api/agents: 200
+        /api/trades: 50
+        /api/predictions: 100
+
+    # Request/response
+    max_request_size_mb: 10
+    request_timeout: 30
+    enable_compression: true
+
+  # Security
+  security:
+    # Secrets management
+    secrets:
+      provider: env  # env (local), vault (production), gcp_secret_manager
+
+      vault:  # HashiCorp Vault
+        url: http://vault:8200
+        token: ${VAULT_TOKEN}
+        mount_point: secret
+
+      gcp_secret_manager:  # GCP only
+        project_id: ${GCP_PROJECT_ID}
+
+    # Encryption
+    encryption:
+      at_rest:
+        enabled: true
+        algorithm: AES-256
+        key: ${ENCRYPTION_KEY}
+
+      in_transit:
+        tls_enabled: true
+        cert_path: /certs
+        min_tls_version: "1.2"
+
+    # Network
+    network:
+      vpc_only: false  # Enable for GCP
+      allowed_ips: []  # Empty = allow all (local), restrict for prod
+
+# Performance
+performance:
+  # Threading
+  workers: ${WORKER_THREADS}
+
+  # Async
+  async_enabled: true
+  event_loop: asyncio
+
+  # Resource limits
+  max_memory_mb: 8192
+  max_cpu_pct: 80
+
+  # Connection pooling
+  connection_pool_size: 50
+
+# Feature Flags
+features:
+  experimental: ${ENABLE_EXPERIMENTAL_FEATURES}
+  detailed_metrics: ${ENABLE_DETAILED_METRICS}
+  agent_memory: ${ENABLE_AGENT_MEMORY}
+  auto_scaling: false  # Enable for production
+  circuit_breaker: true
+  retry_failed_messages: true
+
+# Backup and Recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM (cron format)
+  retention_days: 30
+
+  components:
+    - database
+    - agent_state
+    - configuration
+
+  destination:
+    type: local  # local, gcs (GCP)
+    path: ${BACKUP_PATH}
+
+    gcs:  # GCP only
+      bucket: ${GCS_BUCKET}
+      prefix: backups/
+
+# Disaster Recovery
+disaster_recovery:
+  enabled: true
+  rpo_minutes: 60  # Recovery Point Objective
+  rto_minutes: 30  # Recovery Time Objective
+
+  procedures:
+    - automated_failover
+    - database_restore
+    - state_recovery

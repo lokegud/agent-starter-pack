@@ -1,0 +1,328 @@
+# Department Configuration
+# Configure autonomous department agents
+
+departments:
+  # R&D Department - Research and Development
+  rd:
+    enabled: true
+    agent_count: 10
+    port: 8101
+
+    # R&D Agent Configuration
+    agents:
+      # Market Research Agents
+      market_researchers:
+        count: 4
+        capabilities:
+          - market_analysis
+          - competitive_intelligence
+          - trend_identification
+        data_sources:
+          - news_api
+          - social_media
+          - economic_indicators
+        research_interval: 1800  # seconds (30 minutes)
+
+      # Technology Research Agents
+      tech_researchers:
+        count: 3
+        capabilities:
+          - technology_trends
+          - patent_analysis
+          - innovation_tracking
+        data_sources:
+          - news_api
+          - academic_sources
+        research_interval: 3600  # seconds (1 hour)
+
+      # Consumer Research Agents
+      consumer_researchers:
+        count: 3
+        capabilities:
+          - consumer_sentiment
+          - demand_forecasting
+          - behavior_analysis
+        data_sources:
+          - social_media
+          - surveys
+          - market_data
+        research_interval: 1800  # seconds (30 minutes)
+
+    # Output Configuration
+    output:
+      share_with:
+        - builders  # Share findings with builders
+        - stockbrokers  # Share insights with stockbrokers
+      report_frequency: 3600  # Generate report every hour
+      min_confidence: 0.6  # Only share findings with 60%+ confidence
+
+    # Learning Configuration
+    learning:
+      enabled: true
+      feedback_sources:
+        - builder_outcomes
+        - market_validation
+      adaptation_rate: 0.1  # How quickly to adapt strategies
+
+  # Builders Department - Product Development
+  builders:
+    enabled: true
+    agent_count: 10
+    port: 8102
+
+    # Builder Agent Configuration
+    agents:
+      # Product Managers
+      product_managers:
+        count: 3
+        capabilities:
+          - idea_evaluation
+          - roadmap_planning
+          - priority_setting
+        input_sources:
+          - rd_findings
+          - market_feedback
+
+      # Developers
+      developers:
+        count: 5
+        capabilities:
+          - prototype_creation
+          - feature_development
+          - technical_implementation
+        development_speed: normal  # slow, normal, fast
+
+      # Quality Assurance
+      qa_agents:
+        count: 2
+        capabilities:
+          - testing
+          - validation
+          - quality_assessment
+
+    # Build Configuration
+    build_pipeline:
+      stages:
+        - idea_evaluation  # Evaluate ideas from R&D
+        - planning  # Create development plan
+        - prototyping  # Build prototype
+        - testing  # Test and validate
+        - launch  # Launch to market (simulation)
+        - monitoring  # Monitor performance
+
+      timelines:
+        idea_to_prototype: 7200  # seconds (2 hours in simulation)
+        prototype_to_launch: 10800  # seconds (3 hours)
+
+    # Output Configuration
+    output:
+      share_with:
+        - rd  # Share outcomes back to R&D
+        - stockbrokers  # Share product performance
+      success_metrics:
+        - market_adoption
+        - user_satisfaction
+        - revenue_potential
+
+    # Learning Configuration
+    learning:
+      enabled: true
+      feedback_sources:
+        - product_performance
+        - user_feedback
+        - market_response
+      adaptation_rate: 0.15
+
+  # Stockbrokers Department - Trading Operations
+  stockbrokers:
+    enabled: false  # DISABLED by default for safety
+    agent_count: 10
+    port: 8103
+
+    # ⚠️ TRADING MODE ⚠️
+    # paper: Simulated trading (safe, no real money)
+    # live: Real trading (USES REAL MONEY!)
+    trading_mode: paper
+
+    # Stockbroker Agent Configuration
+    agents:
+      # Fundamental Analysts
+      fundamental_analysts:
+        count: 3
+        capabilities:
+          - financial_analysis
+          - company_valuation
+          - economic_analysis
+        data_sources:
+          - rd_findings
+          - market_data
+          - economic_indicators
+        analysis_interval: 3600  # Re-analyze every hour
+
+      # Technical Analysts
+      technical_analysts:
+        count: 3
+        capabilities:
+          - chart_analysis
+          - pattern_recognition
+          - momentum_analysis
+        data_sources:
+          - market_data
+          - price_history
+        analysis_interval: 900  # Re-analyze every 15 minutes
+
+      # Portfolio Managers
+      portfolio_managers:
+        count: 2
+        capabilities:
+          - portfolio_optimization
+          - risk_management
+          - rebalancing
+        management_interval: 1800  # Rebalance every 30 minutes
+
+      # Traders
+      traders:
+        count: 2
+        capabilities:
+          - order_execution
+          - timing_optimization
+          - cost_minimization
+
+    # Risk Management (CRITICAL)
+    risk_management:
+      # Per-agent limits
+      max_capital_per_agent: 500  # USD
+      max_position_size: 100  # USD per trade
+      max_positions: 10  # Maximum open positions per agent
+
+      # Department-wide limits
+      total_capital: 5000  # USD (10 agents × $500)
+      daily_loss_limit: 250  # USD for entire department
+      max_drawdown_pct: 10  # Maximum 10% drawdown
+
+      # Position limits
+      max_position_pct: 20  # Max 20% of capital in one position
+      diversification:
+        min_assets: 5  # Must hold at least 5 different assets
+        max_sector_exposure: 30  # Max 30% in one sector
+
+      # Circuit breakers
+      circuit_breakers:
+        - trigger: daily_loss_exceeds_limit
+          action: halt_all_trading
+        - trigger: single_loss_exceeds_50_usd
+          action: halt_agent
+        - trigger: suspicious_activity
+          action: alert_and_review
+
+    # Trading Strategy
+    strategy:
+      approach: diversified  # conservative, balanced, diversified, aggressive
+      time_horizon: medium  # short, medium, long
+      asset_classes:
+        - stocks
+        - etfs
+        # - options  # Disabled (too risky)
+        # - crypto   # Disabled (too volatile)
+
+      trading_style:
+        - swing_trading  # Hold for days/weeks
+        - position_trading  # Hold for weeks/months
+        # - day_trading  # Disabled (too risky for AI)
+
+    # Input Sources
+    input_sources:
+      - rd_findings  # Research from R&D
+      - predictor_forecasts  # Predictions
+      - market_data  # Real-time market data
+      - news_sentiment  # News analysis
+
+    # Output Configuration
+    output:
+      share_with:
+        - rd  # Share market insights back to R&D
+      reporting:
+        frequency: 3600  # Report every hour
+        metrics:
+          - total_pnl
+          - win_rate
+          - sharpe_ratio
+          - max_drawdown
+          - positions
+          - trades_executed
+
+    # Learning Configuration
+    learning:
+      enabled: true
+      feedback_sources:
+        - trade_outcomes
+        - market_movements
+        - strategy_performance
+      adaptation_rate: 0.05  # Conservative learning rate
+      backtest_before_live: true
+      min_paper_trading_days: 14  # Must paper trade for 2 weeks
+
+    # Compliance
+    compliance:
+      record_all_trades: true
+      audit_trail: true
+      regulatory_checks: true
+      prohibited_practices:
+        - wash_trading
+        - front_running
+        - insider_trading
+        - market_manipulation
+
+# Department Dependencies
+dependencies:
+  rd:
+    required:
+      - orchestrator
+      - predictor
+      - data_integration
+    optional:
+      - ranker
+
+  builders:
+    required:
+      - orchestrator
+      - rd  # Needs R&D for ideas
+    optional:
+      - ranker
+
+  stockbrokers:
+    required:
+      - orchestrator
+      - predictor
+      - data_integration
+      - rd  # Needs research insights
+    optional:
+      - ranker
+      - builders  # Can trade based on product performance
+
+# Inter-Department Communication
+communication:
+  protocols:
+    - message_queue  # Primary: Kafka/Pub-Sub
+    - rest_api  # Backup: Direct API calls
+
+  topics:
+    rd_to_builders: dept.rd-to-builders
+    rd_to_stockbrokers: dept.rd-to-stockbrokers
+    builders_to_rd: dept.builders-to-rd
+    stockbrokers_to_rd: dept.stockbrokers-to-rd
+
+  message_format:
+    schema_version: "1.0"
+    include_confidence: true
+    include_reasoning: true
+    include_data_sources: true
+
+# Department Health Checks
+health_checks:
+  enabled: true
+  interval: 60  # seconds
+  endpoints:
+    rd: http://rd-department:8101/health
+    builders: http://builders-department:8102/health
+    stockbrokers: http://stockbrokers-department:8103/health

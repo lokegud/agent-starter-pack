@@ -1,0 +1,162 @@
+# Core Modules Configuration
+# Enable or disable modules and configure their settings
+
+modules:
+  # Identity Generator - Creates realistic agent identities
+  identity_generator:
+    enabled: true
+    replicas: 1  # Number of instances (for scaling)
+    port: 8001
+    cache_size: 1000  # Number of identities to cache
+    rate_limit: 100  # Requests per minute
+
+  # Cartographer - City simulation and spatial tracking
+  cartographer:
+    enabled: true
+    replicas: 1
+    port: 8002
+    city_config:
+      size: medium  # small, medium, large
+      population: 50000
+      area_km2: 100
+      neighborhoods: 10
+    use_real_map_data: true  # Use OpenStreetMap data
+
+  # Orchestrator - Manages agent lifecycle and coordination
+  orchestrator:
+    enabled: true
+    replicas: 1
+    port: 8003
+    max_agents: 300
+    agent_limits:
+      max_concurrent: 300
+      max_per_department: 100
+      heartbeat_interval: 30  # seconds
+      timeout: 300  # seconds
+    scaling:
+      auto_scale: false
+      min_agents: 10
+      max_agents: 300
+
+  # Predictor - Market and trend analysis
+  predictor:
+    enabled: true
+    replicas: 1
+    port: 8004
+    prediction_config:
+      interval: 3600  # Run predictions every hour
+      data_sources:
+        - market_data
+        - news
+        - social_sentiment
+        - economic_indicators
+      models:
+        - claude  # Use Claude for analysis
+        - statistical  # Statistical models
+      confidence_threshold: 0.7  # Minimum confidence to report
+
+  # Ranker - Evaluation and ranking system
+  ranker:
+    enabled: true
+    replicas: 1
+    port: 8005
+    ranking_config:
+      algorithms:
+        - multi_criteria  # MCDA
+        - weighted_scoring
+      criteria_weights:
+        potential_return: 0.3
+        risk_level: 0.25
+        time_horizon: 0.15
+        resource_requirements: 0.15
+        strategic_fit: 0.15
+      update_interval: 600  # Re-rank every 10 minutes
+
+  # Data Integration - External API connections
+  data_integration:
+    enabled: true
+    replicas: 1
+    port: 8006
+    data_sources:
+      # Financial Markets
+      alpaca:
+        enabled: true
+        rate_limit: 200  # Requests per minute
+      polygon:
+        enabled: true
+        rate_limit: 5  # Free tier limit
+      alpha_vantage:
+        enabled: false
+        rate_limit: 5
+
+      # News
+      news_api:
+        enabled: true
+        rate_limit: 100
+        fetch_interval: 300  # Fetch every 5 minutes
+
+      # Social Media
+      twitter:
+        enabled: false  # Disabled by default (requires paid tier)
+        rate_limit: 15
+      reddit:
+        enabled: true
+        rate_limit: 60
+
+      # Economic Data
+      fred:
+        enabled: true
+        rate_limit: 120
+        fetch_interval: 3600  # Fetch every hour
+
+      # Geographic
+      mapbox:
+        enabled: true
+        rate_limit: 100
+      openstreetmap:
+        enabled: true
+        rate_limit: 1  # Be respectful
+
+    caching:
+      enabled: true
+      ttl: 300  # Cache for 5 minutes
+      max_size_mb: 500
+
+# Module Dependencies
+# (AI agents use this to understand deployment order)
+dependencies:
+  identity_generator:
+    - postgres
+    - kafka
+  cartographer:
+    - postgres
+    - kafka
+  data_integration:
+    - kafka
+    - redis
+  predictor:
+    - kafka
+    - data_integration
+  ranker:
+    - kafka
+  orchestrator:
+    - kafka
+    - postgres
+    - identity_generator
+    - cartographer
+    - predictor
+    - ranker
+
+# Health Check Configuration
+health_checks:
+  enabled: true
+  interval: 30  # seconds
+  timeout: 10  # seconds
+  retries: 3
+  endpoints:
+    identity_generator: http://identity-generator:8001/health
+    cartographer: http://cartographer:8002/health
+    orchestrator: http://orchestrator:8003/health
+    predictor: http://predictor:8004/health
+    ranker: http://ranker:8005/health
+    data_integration: http://data-integration:8006/health
