@@ -1,0 +1,85 @@
+# Agent City Configuration
+
+# Core Settings
+environment: development
+log_level: INFO
+
+# Anthropic API Configuration
+anthropic:
+  model: claude-3-5-sonnet-20241022
+  max_tokens: 4096
+  temperature: 0.7
+
+# Google Cloud / Vertex AI Configuration
+vertex_ai:
+  model: imagegeneration@005
+  region: us-central1
+
+# Alternative: Use Gemini instead of Claude (all-Google stack)
+# gemini:
+#   model: gemini-2.0-flash-exp
+#   region: us-central1
+
+# Database Configuration
+database:
+  host: localhost
+  port: 5432
+  pool_size: 10
+
+# Redis Cache Configuration
+redis:
+  host: localhost
+  port: 6379
+  ttl: 3600
+
+# MVP Settings (Idea Factory Phase)
+mvp:
+  product_type: icon_pack
+  icon_count: 50
+
+  # Enabled departments (modular activation)
+  enabled_departments:
+    - scout  # Idea Factory scouts
+    - evaluator  # Evaluation Committee (later)
+    - designer  # Designers (later)
+    - builder  # Builders (later)
+    - tester  # Testers (later)
+    - marketer  # Salesmen (later)
+
+# Scout Configuration
+scouts:
+  cycle_hours: 10  # Run scouts every 10 hours
+  sources:
+    reddit:
+      enabled: true
+      subreddits:
+        - SideProject
+        - Entrepreneur
+        - SaaS
+        - startups
+        - indiebiz
+        - UI_Design
+        - UXDesign
+        - webdev
+        - productivity
+        - degoogle
+      limit: 25  # Posts per subreddit
+
+    producthunt:
+      enabled: true
+      limit: 50  # Top products
+
+    twitter:
+      enabled: false  # Requires Twitter API (paid)
+
+    github:
+      enabled: false  # For later phase
+
+# Opportunity Scoring
+scoring:
+  min_score: 0.5  # Minimum score to be considered
+  weights:
+    market_demand: 0.3
+    feasibility: 0.25
+    competition: 0.25
+    revenue_potential: 0.2
