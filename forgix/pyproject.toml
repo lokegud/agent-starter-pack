@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forgix"
+version = "0.1.0"
+description = "A private, secure, self-building AI agent. The anti-OpenClaw."
+requires-python = ">=3.11"
+license = {text = "MIT"}
+keywords = ["ai", "agent", "local", "llm", "private", "secure"]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.28",
+    "jinja2>=3.1",
+    "pydantic>=2.10",
+    "rich>=13.9",
+    "click>=8.1",
+    "keyring>=25.5",
+    "cryptography>=44.0",
+    "aiofiles>=24.1",
+    "aiosqlite>=0.21",
+    "psutil>=6.1",
+]
+
+[project.optional-dependencies]
+all = ["secretstorage"]
+android = [
+    "llama-cpp-python>=0.3",
+    "huggingface_hub>=0.24",
+    "qrcode[pil]>=7.4",
+]
+
+[project.scripts]
+forgix = "forgix.__main__:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["forgix*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+log_cli = false
