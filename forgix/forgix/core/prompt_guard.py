@@ -2,7 +2,7 @@
 Forgix PromptGuard — injection detection and external data wrapping.
 
 All external data passes through here before reaching the LLM.
-Risk levels: SAFE / SUSPICIOUS (1-2 patterns) / BLOCKED (>2 patterns).
+Risk levels: SAFE / SUSPICIOUS (1 pattern) / BLOCKED (2+ patterns).
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def scan(text: str) -> GuardResult:
     if not text:
         return GuardResult(risk_level=RiskLevel.SAFE, original_text=text)
     matched = [p.pattern for p in INJECTION_PATTERNS if p.search(text)]
-    if len(matched) > 2:
+    if len(matched) >= 2:
         risk = RiskLevel.BLOCKED
     elif matched:
         risk = RiskLevel.SUSPICIOUS

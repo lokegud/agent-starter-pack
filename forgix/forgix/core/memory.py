@@ -114,7 +114,8 @@ class MemoryStore:
     async def list_conversations(self) -> list[str]:
         async with aiosqlite.connect(str(self.db_path)) as db:
             async with db.execute(
-                "SELECT DISTINCT conversation_id FROM conversations ORDER BY MIN(created_at) DESC"
+                "SELECT conversation_id, MIN(created_at) AS first_seen "
+                "FROM conversations GROUP BY conversation_id ORDER BY first_seen DESC"
             ) as cur:
                 rows = await cur.fetchall()
         return [r[0] for r in rows]

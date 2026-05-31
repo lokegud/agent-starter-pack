@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=72", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "forgix"
@@ -38,3 +38,8 @@ forgix = "forgix.__main__:cli"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["forgix*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+log_cli = false
