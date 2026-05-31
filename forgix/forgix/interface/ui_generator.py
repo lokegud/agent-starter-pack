@@ -6,6 +6,7 @@ Seed is NOT persisted — you never know what you'll get.
 """
 from __future__ import annotations
 
+import json
 import random
 from typing import Any
 
@@ -356,7 +357,6 @@ class UIGenerator:
             "{{ token_json }}": json.dumps(token),
             "{{ csrf_json }}": json.dumps(csrf),
         }
-        import json
         for k, v in replacements.items():
             html = html.replace(k, v)
         return html
